@@ -39,8 +39,8 @@ func main() {
 				Usage:   "Start the server mode",
 				Action: func(c *cli.Context) error {
 					server := rest.NewServer(store)
-					fmt.Println("Server mode session started on port 6767")
-					if err := server.ListenAndServe(":6767"); err != nil {
+					fmt.Println("Server mode session started on port 16767")
+					if err := server.ListenAndServe(":16767"); err != nil {
 						log.Fatal(err)
 					}
 					fmt.Println("Server mode session closed")

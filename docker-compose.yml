@@ -1,0 +1,9 @@
+version: '3.9'
+services:
+  qstore:
+    image: "andyantrim/qstore"
+    name: "qstore"
+    environment:
+      - LISTEN=":16767"
+    ports:
+      - "16767:16767"
