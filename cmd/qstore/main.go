@@ -6,13 +6,17 @@ import (
 	"os"
 
 	"github.com/andyantrim/qstore/shell"
-	"github.com/andyantrim/qstore/store/cache"
+	"github.com/andyantrim/qstore/store"
 	"github.com/andyantrim/qstore/transport/rest"
 	"github.com/urfave/cli/v2"
 )
 
 func main() {
-	store := cache.NewCache()
+	store, err := store.NewWrapper("store.bb")
+	if err != nil {
+		log.Println("Failed to create store")
+		log.Fatal(err)
+	}
 	app := cli.App{
 		Name:      "qstore",
 		UsageText: "A simple key-value store",
