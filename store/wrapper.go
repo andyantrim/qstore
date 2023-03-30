@@ -13,6 +13,7 @@ type Wrapper struct {
 	cache        Store
 	file         Store
 	writeChannel chan qstore.Pair
+	tester       bool
 }
 
 func NewWrapper(path string) (*Wrapper, error) {
@@ -29,16 +30,36 @@ func NewWrapper(path string) (*Wrapper, error) {
 }
 
 func (w *Wrapper) Get(key string) (interface{}, error) {
+	if w.tester {
+		return w.file.Get(key)
+	}
 	return w.cache.Get(key)
 }
 
 func (w *Wrapper) Set(key string, value interface{}) error {
+	if w.tester {
+		return w.file.Set(key, value)
+	}
 	err := w.cache.Set(key, value)
 	if err == nil {
 		go w.file.Set(key, value)
 	}
 
 	return err
+}
+
+func (w *Wrapper) Delete(key string) error {
+	if err := w.cache.Delete(key); err != nil {
+		return err
+	}
+	return w.file.Delete(key)
+}
+
+func (w *Wrapper) List() ([]qstore.Pair, error) {
+	if w.tester {
+		return w.file.List()
+	}
+	return w.cache.List()
 }
 
 func LoadAll() error {

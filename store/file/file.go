@@ -1,9 +1,12 @@
 package file
 
 import (
+	"bufio"
 	"bytes"
 	"encoding/gob"
+	"errors"
 	"os"
+	"strings"
 
 	"github.com/andyantrim/qstore"
 )
@@ -69,6 +72,91 @@ func (f *File) Set(key string, value interface{}) error {
 }
 
 func (f *File) Get(key string) (interface{}, error) {
-	// read from file
-	return "", nil
+	// Read all the file
+	in, err := os.Open(f.path)
+	if err != nil {
+		return nil, err
+	}
+	defer in.Close()
+
+	// Read it into a string
+	scan := bufio.NewScanner(in)
+	scan.Split(bufio.ScanLines)
+
+	// Loop through and return when we find the value
+	for scan.Scan() {
+		// Do something with the line
+		line := scan.Text()
+		if strings.HasPrefix(line, key) {
+			// Decode the value
+			return strings.Replace(line, key+"=", "", 1), nil
+		}
+	}
+
+	return nil, errors.New("not found")
+}
+
+func (f *File) List() ([]qstore.Pair, error) {
+
+	// Read all the file
+	in, err := os.Open(f.path)
+	if err != nil {
+		return nil, err
+	}
+	defer in.Close()
+
+	// Read it into a string
+	scan := bufio.NewScanner(in)
+	scan.Split(bufio.ScanLines)
+
+	results := []qstore.Pair{}
+	// Loop through and return when we find the value
+	for scan.Scan() {
+		// Do something with the line
+		line := scan.Text()
+		parts := strings.Split(line, "=")
+		if len(parts) == 2 {
+			results = append(results, qstore.Pair{
+				Key:   parts[0],
+				Value: parts[1],
+			})
+		}
+	}
+
+	return results, nil
+}
+
+func (f *File) Delete(key string) error {
+	// Read all the file
+	in, err := os.Open(f.path)
+	if err != nil {
+		return err
+	}
+
+	// Read it into a string
+	scan := bufio.NewScanner(in)
+	scan.Split(bufio.ScanLines)
+	// Loop through the lines and append them to a string builder
+	s := strings.Builder{}
+	for scan.Scan() {
+		// Do something with the line
+		line := scan.Text()
+		if !strings.HasPrefix(line, key) {
+			s.WriteString(line)
+			s.WriteString("\n")
+		}
+	}
+
+	err = in.Close()
+	if err != nil {
+		return err
+	}
+
+	// Reopen the file with write permissions
+	out, err := os.OpenFile(f.path, os.O_WRONLY|os.O_TRUNC, 0600)
+	if err != nil {
+		return err
+	}
+	out.Write([]byte(s.String()))
+	return nil
 }

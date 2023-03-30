@@ -47,6 +47,7 @@ func (s *Shell) PrintUsuage() {
 	fmt.Println("Usuage: <command> <args>")
 	fmt.Println("Example: get foo")
 	fmt.Println("Example: set foo bar")
+	fmt.Println("Example: delete foo")
 }
 
 func (s *Shell) PrintHeader() {
